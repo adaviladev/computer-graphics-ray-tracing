@@ -472,7 +472,8 @@ int main(int argc, char *argv[])
 
 	saveImg("scene_aa_x2.bmp", width, height, dpi, pixels);
 
-	delete pixels, tempRed, tempGreen, tempBlue;
+	delete[] pixels;
+	// delete tempRed, tempGreen, tempBlue;
 
 	endTime = clock();
 	float totalTime = ((float)endTime - (float)(startTime)) / 1000;
