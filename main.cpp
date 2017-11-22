@@ -356,12 +356,12 @@ bool makeTeapot()
 			ss >> x >> y >> z;
 			temp_vertices.push_back(Vect(x/divisor, y/divisor, z/divisor));
 		}
-		//else if (indicator == "vt") {
-		//	//double x, y;
-		//	//ss >> uv.x >> uv.y;
-		//	//vec2 uv;
-		//	//temp_uvs.push_back(uv);
-		//}
+			//else if (indicator == "vt") {
+			//	//double x, y;
+			//	//ss >> uv.x >> uv.y;
+			//	//vec2 uv;
+			//	//temp_uvs.push_back(uv);
+			//}
 		else if (indicator == "vn") {
 			double x, y, z;
 			ss >> x >> y >> z;
@@ -413,12 +413,12 @@ bool makeTeapot()
 		Vect normal = temp_normals[normalIndex - 1];
 		//cout << vertex1.getVectX() << endl;
 		scene_objects.push_back(
-			new Triangle(
-				temp_vertices[vertexIndex1 - 1],
-				temp_vertices[vertexIndex2 - 1],
-				temp_vertices[vertexIndex3 - 1],
-				Color()
-			)
+				new Triangle(
+						temp_vertices[vertexIndex1 - 1],
+						temp_vertices[vertexIndex2 - 1],
+						temp_vertices[vertexIndex3 - 1],
+						Color()
+				)
 		);
 
 		// Put the attributes in buffers
