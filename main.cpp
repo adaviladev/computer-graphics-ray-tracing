@@ -648,7 +648,7 @@ int main(int argc, char* argv[])
 	endTime = clock();
 	float totalTime = (( float ) endTime-( float ) ( startTime ))/1000;
 
-	cout << totalTime << "sec" << endl;
+	cout << totalTime / 1000 << "sec" << endl;
 
 	return 0;
 }
