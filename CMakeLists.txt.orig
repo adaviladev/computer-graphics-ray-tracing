@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.8)
+project(adrian_davila_final_v2)
+
+set(CMAKE_CXX_STANDARD 11)
+
+set(SOURCE_FILES main.cpp Camera.h Color.h Light.h Object.h Plane.h Ray.h Source.h Sphere.h Triangle.h Vect.h)
+add_executable(adrian_davila_final_v2 ${SOURCE_FILES})

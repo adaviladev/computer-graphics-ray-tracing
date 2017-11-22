@@ -1,0 +1,1 @@
+/usr/bin/c++.exe -g  -Wl,--enable-auto-import CMakeFiles/adrian_davila_final_v2.dir/main.cpp.o  -o adrian_davila_final_v2.exe -Wl,--out-implib,libadrian_davila_final_v2.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
