@@ -5,3 +5,4 @@ Rasterrain.exe
 CMakeLists.txt
 cmake-build-debug/
 *.bmp
+Makefile

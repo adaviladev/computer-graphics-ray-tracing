@@ -147,15 +147,18 @@ Color getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vecto
 		int square = ( int ) floor(intersectionPosition.getVectX())
 				// + (int)floor(intersectionPosition.getVectY())
 				+( int ) floor(intersectionPosition.getVectZ());
+		double red = winningObjectColor.getColorRed();
+		double blue = winningObjectColor.getColorBlue();
+		double green = winningObjectColor.getColorGreen();
 		if (square%2==0) {
-			winningObjectColor.setColorRed(0.25);
-			winningObjectColor.setColorGreen(0.25);
-			winningObjectColor.setColorBlue(0.25);
+			winningObjectColor.setColorRed(0.25*red);
+			winningObjectColor.setColorGreen(0.25*blue);
+			winningObjectColor.setColorBlue(0.25*green);
 		}
 		else {
-			winningObjectColor.setColorRed(0.75);
-			winningObjectColor.setColorGreen(0.75);
-			winningObjectColor.setColorBlue(0.75);
+			winningObjectColor.setColorRed(0.75*red);
+			winningObjectColor.setColorGreen(0.75*blue);
+			winningObjectColor.setColorBlue(0.75*green);
 		}
 	}
 
@@ -328,6 +331,7 @@ void makeCube(Vect corner1, Vect corner2, Color color)
 	scene_objects.push_back(new Triangle(B, C, corner1, color));
 
 }
+
 /*
 */
 bool makeTeapot()
@@ -345,13 +349,13 @@ bool makeTeapot()
 	int row = 0;
 	double divisor = 14;
 
-	while(getline(fin, txtLine)) {
+	while (getline(fin, txtLine)) {
 		string indicator;
 		stringstream ss;
 		ss << txtLine << endl;
 
 		ss >> indicator;
-		if (indicator == "v") {
+		if (indicator=="v") {
 			double x, y, z;
 			ss >> x >> y >> z;
 			temp_vertices.push_back(Vect(x/divisor, y/divisor, z/divisor));
@@ -362,17 +366,17 @@ bool makeTeapot()
 			//	//vec2 uv;
 			//	//temp_uvs.push_back(uv);
 			//}
-		else if (indicator == "vn") {
+		else if (indicator=="vn") {
 			double x, y, z;
 			ss >> x >> y >> z;
 			temp_normals.push_back(Vect(x, y, z));
 		}
-		else if (indicator == "f") {
+		else if (indicator=="f") {
 			string vertex1, vertex2, vertex3, data;
 			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
 
 			ss >> vertex1 >> vertex2 >> vertex3;
-			data = vertex1 + " " + vertex2 + " " + vertex3 + "\n";
+			data = vertex1+" "+vertex2+" "+vertex3+"\n";
 
 			sscanf(&data[0],
 					"%d/%d/%d %d/%d/%d %d/%d/%d\n",
@@ -396,7 +400,7 @@ bool makeTeapot()
 	fin.close();
 
 	// For each vertex of each triangle
-	for (unsigned int i = 0; i<vertexIndices.size(); i+=3) {
+	for (unsigned int i = 0; i<vertexIndices.size(); i += 3) {
 
 		// Get the indices of its attributes
 		unsigned int vertexIndex1 = vertexIndices[i];
@@ -406,17 +410,17 @@ bool makeTeapot()
 		unsigned int normalIndex = normalIndices[i];
 
 		// Get the attributes thanks to the index
-		Vect vertex1 = temp_vertices[vertexIndex1 - 1];
-		Vect vertex2 = temp_vertices[vertexIndex2 - 1];
-		Vect vertex3 = temp_vertices[vertexIndex3 - 1];
+		Vect vertex1 = temp_vertices[vertexIndex1-1];
+		Vect vertex2 = temp_vertices[vertexIndex2-1];
+		Vect vertex3 = temp_vertices[vertexIndex3-1];
 		//vec2 uv = temp_uvs[uvIndex - 1];
-		Vect normal = temp_normals[normalIndex - 1];
+		Vect normal = temp_normals[normalIndex-1];
 		//cout << vertex1.getVectX() << endl;
 		scene_objects.push_back(
 				new Triangle(
-						temp_vertices[vertexIndex1 - 1],
-						temp_vertices[vertexIndex2 - 1],
-						temp_vertices[vertexIndex3 - 1],
+						temp_vertices[vertexIndex1-1],
+						temp_vertices[vertexIndex2-1],
+						temp_vertices[vertexIndex3-1],
 						Color()
 				)
 		);
@@ -473,7 +477,7 @@ int main(int argc, char* argv[])
 	Color pretty_green(0.5, 1.0, 0.5, 0.3);
 	Color tile_floor(1, 1, 1, 2.8);
 	Color maroon(0.5, 0.25, 0.25, 0.8);
-	Color deep_red(0.8, 0.25, 0.25, 0.8);
+	Color deep_red(0.8, 0.25, 0.25, 2.8);
 	Color orange(0.94, 0.75, 0.31, 0);
 	Color gray(0.5, 0.5, 0.5, .8);
 	Color black(0, 0, 0, 0);
@@ -508,7 +512,7 @@ int main(int argc, char* argv[])
 	double tempRed, tempGreen, tempBlue;
 
 	for (int x = 0; x<width; x++) {
-		cout << "row: " << x << endl;
+		//cout << "row: " << x << endl;
 		for (int y = 0; y<height; y++) {
 			currentPixelIndex = y*width+x;
 
