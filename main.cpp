@@ -13,7 +13,7 @@
 #include "Vect.h"
 #include "Ray.h"
 #include "Camera.h"
-#include "Color.h"
+#include "CSColor.h"
 #include "Source.h"
 #include "Light.h"
 #include "Object.h"
@@ -137,10 +137,10 @@ int winningObjectIndex(vector<double> intersections)
 	return -1;
 }
 
-Color getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vector<Object*> scene_objects,
+CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vector<Object*> scene_objects,
 		int indexOfWinningObject, vector<Source*> lightSources, double accuracy, double ambientLight)
 {
-	Color winningObjectColor = scene_objects.at(indexOfWinningObject)->getColor();
+	CSColor winningObjectColor = scene_objects.at(indexOfWinningObject)->getColor();
 	Vect winningObjectNormal = scene_objects.at(indexOfWinningObject)->getNormalAt(intersectionPosition);
 
 	if (winningObjectColor.getColorSpecial()>=2) {
@@ -162,7 +162,7 @@ Color getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vecto
 		}
 	}
 
-	Color finalColor = winningObjectColor.colorScalar(ambientLight);
+	CSColor finalColor = winningObjectColor.colorScalar(ambientLight);
 
 	if (winningObjectColor.getColorSpecial()>0 && winningObjectColor.getColorSpecial()<=1) {
 		double dot1 = winningObjectNormal.dotProduct(intersectionRayDirection.negative());
@@ -188,7 +188,7 @@ Color getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vecto
 						reflectionDirection.multVector(reflectionIntersections.at(indexOfWinningObjectWithReflection)));
 				Vect reflectionIntersectionRayDirection = reflectionDirection;
 
-				Color reflectionIntersectionColor = getColorAt(reflectionIntersectionPosition,
+				CSColor reflectionIntersectionColor = getColorAt(reflectionIntersectionPosition,
 						reflectionIntersectionRayDirection, scene_objects, indexOfWinningObjectWithReflection,
 						lightSources, accuracy, ambientLight);
 
@@ -222,7 +222,7 @@ Color getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vecto
 						reflectionDirection.multVector(reflectionIntersections.at(indexOfWinningObjectWithReflection)));
 				Vect reflectionIntersectionRayDirection = reflectionDirection;
 
-				Color reflectionIntersectionColor = getColorAt(reflectionIntersectionPosition,
+				CSColor reflectionIntersectionColor = getColorAt(reflectionIntersectionPosition,
 						reflectionIntersectionRayDirection, scene_objects, indexOfWinningObjectWithReflection,
 						lightSources, accuracy, ambientLight);
 
@@ -292,7 +292,35 @@ Color getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vecto
 	return finalColor.clip();
 }
 
-void makeCube(Vect corner1, Vect corner2, Color color)
+unsigned char* readBMP(const char* filename)
+{
+	int i;
+	FILE* f = fopen("bricks.png", "rb");
+	unsigned char info[54];
+	fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
+
+	// extract image height and width from header
+	int width = *(int*)&info[18];
+	int height = *(int*)&info[22];
+	cout << info << endl;
+	cout << width << "x" << height << endl;
+
+	int size = 3 * width * height;
+	unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
+	fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
+	fclose(f);
+
+	for(i = 0; i < size; i += 3)
+	{
+		unsigned char tmp = data[i];
+		data[i] = data[i+2];
+		data[i+2] = tmp;
+	}
+
+	return data;
+}
+
+void makeCube(Vect corner1, Vect corner2, CSColor color)
 {
 	// Corner 1
 	double c1x = corner1.getVectX();
@@ -336,12 +364,16 @@ void makeCube(Vect corner1, Vect corner2, Color color)
 */
 bool makeTeapot()
 {
-	const char* path = "teapot2.obj";
+	const char* path = "teapot.obj";
+	const char* imagePath = "bricks.png";
+	unsigned char* imageData = readBMP(imagePath);
+	int imageWidth = 1024;
+	int imageHeight = 1024;
 	printf("Loading OBJ file %s...\n", path);
 
 	vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 	vector<Vect> temp_vertices;
-	//vector<vec2> temp_uvs;
+	vector<Vect> temp_uvs;
 	vector<Vect> temp_normals;
 
 	fstream fin(path);
@@ -360,12 +392,13 @@ bool makeTeapot()
 			ss >> x >> y >> z;
 			temp_vertices.push_back(Vect(x/divisor, y/divisor, z/divisor));
 		}
-			//else if (indicator == "vt") {
-			//	//double x, y;
-			//	//ss >> uv.x >> uv.y;
-			//	//vec2 uv;
-			//	//temp_uvs.push_back(uv);
-			//}
+		else if (indicator == "vt") {
+			double x, y;
+			ss >> x >> y;
+			x = (x + 2) * imageWidth;
+			y = (y + 2) * imageHeight;
+			temp_uvs.push_back(Vect(x, y, 0));
+		}
 		else if (indicator=="vn") {
 			double x, y, z;
 			ss >> x >> y >> z;
@@ -413,15 +446,27 @@ bool makeTeapot()
 		Vect vertex1 = temp_vertices[vertexIndex1-1];
 		Vect vertex2 = temp_vertices[vertexIndex2-1];
 		Vect vertex3 = temp_vertices[vertexIndex3-1];
-		//vec2 uv = temp_uvs[uvIndex - 1];
+		Vect uv = temp_uvs[uvIndex - 1];
 		Vect normal = temp_normals[normalIndex-1];
 		//cout << vertex1.getVectX() << endl;
+		double red, green, blue;
+		int pixelIndex = uv.getVectX() * imageWidth + uv.getVectY();
+		red = imageData[pixelIndex];
+		blue = imageData[pixelIndex + 1];
+		green = imageData[pixelIndex + 2];
+
+		//cout << "index: " << pixelIndex << "; red: " << red << "; blue: " << blue << "; green: " << green << endl;
 		scene_objects.push_back(
 				new Triangle(
 						temp_vertices[vertexIndex1-1],
 						temp_vertices[vertexIndex2-1],
 						temp_vertices[vertexIndex3-1],
-						Color()
+						CSColor(
+								red,
+								blue,
+								green,
+								0.0
+						)
 				)
 		);
 
@@ -448,7 +493,7 @@ int main(int argc, char* argv[])
 	int area = width*height;
 	RGBType* pixels = new RGBType[area];
 
-	int aadepth = 2;
+	int aadepth = 1;
 	double aathreshold = 0.1;
 	double aspectRatio = ( double ) width/( double ) height;
 	double ambientLight = 0.3;
@@ -473,14 +518,14 @@ int main(int argc, char* argv[])
 	Vect camDown = camRight.crossProduct(camDir);
 	Camera scene_camera(camPos, camDir, camRight, camDown);
 
-	Color white_light(1.0, 1.0, 1.0, 0);
-	Color pretty_green(0.5, 1.0, 0.5, 0.3);
-	Color tile_floor(1, 1, 1, 2.8);
-	Color maroon(0.5, 0.25, 0.25, 0.8);
-	Color deep_red(0.8, 0.25, 0.25, 2.8);
-	Color orange(0.94, 0.75, 0.31, 0);
-	Color gray(0.5, 0.5, 0.5, .8);
-	Color black(0, 0, 0, 0);
+	CSColor white_light(1.0, 1.0, 1.0, 0);
+	CSColor pretty_green(0.5, 1.0, 0.5, 0.3);
+	CSColor tile_floor(1, 1, 1, 2.8);
+	CSColor maroon(0.5, 0.25, 0.25, 0.8);
+	CSColor deep_red(0.8, 0.25, 0.25, 2.8);
+	CSColor orange(0.94, 0.75, 0.31, 0);
+	CSColor gray(0.5, 0.5, 0.5, .8);
+	CSColor black(0, 0, 0, 0);
 
 	Vect light_position(-7, 10, -10);
 	Light scene_light(light_position, white_light);
@@ -498,14 +543,14 @@ int main(int argc, char* argv[])
 	Plane scene_plane(Y, -1, tile_floor);
 
 	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere1));
-	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere2));
-	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere3));
+	//scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere2));
+	//scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere3));
 	scene_objects.push_back(dynamic_cast<Object*>(&scene_plane));
 	// scene_objects.push_back(dynamic_cast<Object*>(&scene_triangle));
 
 	//makeCube(Vect(1, 1, 1), Vect(-1, -1, -1), orange);
-	//makeTeapot();
-	//cout << "teapot finished loading" << endl;
+	makeTeapot();
+	cout << "teapot finished loading" << endl;
 
 	int aaIndex = 0;
 	double xAmount, yAmount;
@@ -590,9 +635,9 @@ int main(int argc, char* argv[])
 					int indexOfWinningObject = winningObjectIndex(intersections);
 
 					if (indexOfWinningObject==-1) {
-						tempRed[aaIndex] = 0;
-						tempGreen[aaIndex] = 0;
-						tempBlue[aaIndex] = 0;
+						tempRed[aaIndex]   = 0.227451;
+						tempGreen[aaIndex] = 0.647085;
+						tempBlue[aaIndex]  = 0.847059;
 					}
 					else {
 						if (intersections.at(indexOfWinningObject)>accuracy) {
@@ -604,7 +649,7 @@ int main(int argc, char* argv[])
 							);
 							Vect intersectionRayDirection = camRayDirection;
 
-							Color intersectionColor = getColorAt(intersectionPosition, intersectionRayDirection,
+							CSColor intersectionColor = getColorAt(intersectionPosition, intersectionRayDirection,
 									scene_objects, indexOfWinningObject, lightSources, accuracy, ambientLight);
 
 							tempRed[aaIndex] = intersectionColor.getColorRed();

@@ -3,11 +3,11 @@
 
 #include "math.h"
 
-class Color {
+class CSColor {
 	double red, green, blue, special;
 public:
-	Color();
-	Color(double, double, double, double);
+	CSColor();
+	CSColor(double, double, double, double);
 
 	double getColorRed(){ return this->red; }
 
@@ -29,8 +29,8 @@ public:
 		return (this->red + this->green + this->blue) / 3;
 	}
 
-	Color colorScalar(double scalar) {
-		return Color(
+	CSColor colorScalar(double scalar) {
+		return CSColor(
 			this->red * scalar,
 			this->green * scalar,
 			this->blue * scalar,
@@ -38,8 +38,8 @@ public:
 		);
 	}
 
-	Color addColor(Color color) {
-		return Color(
+	CSColor addColor(CSColor color) {
+		return CSColor(
 			this->red + color.getColorRed(),
 			this->green + color.getColorGreen(),
 			this->blue + color.getColorBlue(),
@@ -47,8 +47,8 @@ public:
 		);
 	}
 
-	Color multColor(Color color) {
-		return Color(
+	CSColor multColor(CSColor color) {
+		return CSColor(
 			this->red * color.getColorRed(),
 			this->green * color.getColorGreen(),
 			this->blue * color.getColorBlue(),
@@ -56,8 +56,8 @@ public:
 		);
 	}
 
-	Color avgColor(Color color) {
-		return Color(
+	CSColor avgColor(CSColor color) {
+		return CSColor(
 			(this->red + color.getColorRed()) / 2,
 			(this->green + color.getColorGreen()) / 2,
 			(this->blue + color.getColorBlue()) / 2,
@@ -65,7 +65,7 @@ public:
 		);
 	}
 
-	Color clip() {
+	CSColor clip() {
 		double allLight = this->red + this->green + this->blue;
 		double excessLight = allLight - 3;
 		if(excessLight > 0) {
@@ -86,17 +86,17 @@ public:
 
 		if(this->blue < 0) { this->blue = 0; }
 
-		return Color(this->red, this->green, this->blue, this->special);
+		return CSColor(this->red, this->green, this->blue, this->special);
 	}
 };
 
-Color::Color() {
+CSColor::CSColor() {
 	this->red = 0;
 	this->green = 0;
 	this->blue = 0;
 }
 
-Color::Color(double red, double green, double blue, double special) {
+CSColor::CSColor(double red, double green, double blue, double special) {
 	this->red = red;
 	this->green = green;
 	this->blue = blue;

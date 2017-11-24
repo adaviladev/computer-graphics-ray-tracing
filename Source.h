@@ -6,7 +6,7 @@ public:
 	Source();
 	
 	virtual Vect getLightPosition() { return Vect(0, 0, 0); }
-	virtual Color getColor() { return Color(1, 1, 1, 0); }
+	virtual CSColor getColor() { return CSColor(1, 1, 1, 0); }
 };
 
 Source::Source() {}

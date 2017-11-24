@@ -3,21 +3,21 @@
 
 #include "Source.h"
 #include "Vect.h"
-#include "Color.h"
+#include "CSColor.h"
 
 class Light : public Source {
 	Vect position;
-	Color color;
+	CSColor color;
 public:
 	Light();
-	Light(Vect, Color);
+	Light(Vect, CSColor);
 
 	virtual Vect getLightPosition()
 	{
 		return this->position;
 	}
 
-	virtual Color getLightColor()
+	virtual CSColor getLightColor()
 	{
 		return this->color;
 	}
@@ -25,10 +25,10 @@ public:
 
 Light::Light() {
 	this->position = Vect(0, 0, 0);
-	this->color = Color(1, 1, 1, 0);
+	this->color = CSColor(1, 1, 1, 0);
 }
 
-Light::Light(Vect position, Color color) {
+Light::Light(Vect position, CSColor color) {
 	this->position = position;
 	this->color = color;
 }

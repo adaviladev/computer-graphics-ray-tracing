@@ -5,15 +5,15 @@
 #include "Object.h"
 #include "Vect.h"
 #include "Ray.h"
-#include "Color.h"
+#include "CSColor.h"
 
 class Plane : public Object {
 	Vect normal;
 	double distance;
-	Color color;
+	CSColor color;
 public:
 	Plane();
-	Plane(Vect, double, Color);
+	Plane(Vect, double, CSColor);
 
 	Vect getPlaneNormal()
 	{
@@ -25,7 +25,7 @@ public:
 		return this->distance;
 	}
 
-	virtual Color getColor()
+	virtual CSColor getColor()
 	{
 		return this->color;
 	}
@@ -58,10 +58,10 @@ public:
 Plane::Plane() {
 	this->normal = Vect(1, 0, 0);
 	this->distance = 1.0;
-	this->color = Color(0.5, 0.5, 0.5, 0);
+	this->color = CSColor(0.5, 0.5, 0.5, 0);
 }
 
-Plane::Plane(Vect normal, double distance, Color color) {
+Plane::Plane(Vect normal, double distance, CSColor color) {
 	this->normal = normal;
 	this->distance = distance;
 	this->color = color;

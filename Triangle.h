@@ -5,16 +5,16 @@
 #include "Object.h"
 #include "Vect.h"
 #include "Ray.h"
-#include "Color.h"
+#include "CSColor.h"
 
 class Triangle : public Object {
 	Vect vertexA, vertexB, vertexC;
 	Vect normal;
 	double distance;
-	Color color;
+	CSColor color;
 public:
 	Triangle();
-	Triangle(Vect, Vect, Vect, Color);
+	Triangle(Vect, Vect, Vect, CSColor);
 
 	Vect getTriangleNormal()
 	{
@@ -39,7 +39,7 @@ public:
 		return this->distance;
 	}
 
-	virtual Color getColor()
+	virtual CSColor getColor()
 	{
 		return this->color;
 	}
@@ -125,10 +125,10 @@ Triangle::Triangle() {
 	this->vertexA = Vect(1,0,0);
 	this->vertexB = Vect(0,1,0);
 	this->vertexC = Vect(0,0,1);
-	this->color = Color(0.5, 0.5, 0.5, 0);
+	this->color = CSColor(0.5, 0.5, 0.5, 0);
 }
 
-Triangle::Triangle(Vect pointA, Vect pointB, Vect pointC, Color color) {
+Triangle::Triangle(Vect pointA, Vect pointB, Vect pointC, CSColor color) {
 	this->vertexA = pointA;
 	this->vertexB = pointB;
 	this->vertexC = pointC;

@@ -3,13 +3,13 @@
 
 #include "Ray.h"
 #include "Vect.h"
-#include "Color.h"
+#include "CSColor.h"
 
 class Object {
 public:
 	Object();
 
-	virtual Color getColor() { return Color(0.0,0.0,0.0,0); }
+	virtual CSColor getColor() { return CSColor(0.0,0.0,0.0,0); }
 
 	virtual Vect getNormalAt(Vect intersectionPosition) { 
 		return Vect(0, 0, 0); 

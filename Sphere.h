@@ -4,21 +4,21 @@
 #include "math.h"
 #include "Object.h"
 #include "Vect.h"
-#include "Color.h"
+#include "CSColor.h"
 
 class Sphere : public Object {
 	Vect center;
 	double radius;
-	Color color;
+	CSColor color;
 public:
 	Sphere();
-	Sphere(Vect, double, Color);
+	Sphere(Vect, double, CSColor);
 
 	Vect getSphereCenter() { return this->center; }
 
 	double getSphereRadius() { return this->radius; }
 
-	virtual Color getColor() { return this->color; }
+	virtual CSColor getColor() { return this->color; }
 
 	virtual Vect getNormalAt(Vect point) {
 		// normal always points away from the center of a sphere
@@ -74,10 +74,10 @@ public:
 Sphere::Sphere() {
 	this->center = Vect(0, 0, 0);
 	this->radius = 1.0;
-	this->color = Color(0.5, 0.5, 0.5, 0);
+	this->color = CSColor(0.5, 0.5, 0.5, 0);
 }
 
-Sphere::Sphere(Vect center, double radius, Color color) {
+Sphere::Sphere(Vect center, double radius, CSColor color) {
 	this->center = center;
 	this->radius = radius;
 	this->color = color;
