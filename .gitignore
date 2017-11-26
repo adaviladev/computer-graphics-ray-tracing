@@ -4,5 +4,4 @@ Rasterrain.exe
 .DS_Store
 CMakeLists.txt
 cmake-build-debug/
-*.bmp
 Makefile

@@ -24,72 +24,71 @@
 using namespace std;
 
 int currentPixelIndex;
-vector<Object*> scene_objects;
+vector<Object *> scene_objects;
 
 struct RGBType {
-	double red;
-	double green;
-	double blue;
+  double red;
+  double green;
+  double blue;
 };
 
-void saveImg(const char* filename, int w, int h, int dpi, RGBType* data)
-{
-	FILE* f;
+void saveImg(const char *filename, int w, int h, int dpi, RGBType *data) {
+	FILE *f;
 	int k = w*h;
 	int s = 4*k;
-	int filesize = 54+s;
+	int filesize = 54 + s;
 
 	double factor = 39.375;
 	int m = static_cast<int>(factor);
 
 	int ppm = dpi*m;
 
-	unsigned char bmpfileheader[14] = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-	unsigned char bmpinfoheader[40] = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0 };
+	unsigned char bmpfileheader[14] = {'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0};
+	unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0};
 
-	bmpfileheader[2] = ( unsigned char ) ( filesize );
-	bmpfileheader[3] = ( unsigned char ) ( filesize >> 8 );
-	bmpfileheader[4] = ( unsigned char ) ( filesize >> 16 );
-	bmpfileheader[5] = ( unsigned char ) ( filesize >> 24 );
+	bmpfileheader[2] = ( unsigned char ) (filesize);
+	bmpfileheader[3] = ( unsigned char ) (filesize >> 8);
+	bmpfileheader[4] = ( unsigned char ) (filesize >> 16);
+	bmpfileheader[5] = ( unsigned char ) (filesize >> 24);
 
-	bmpinfoheader[4] = ( unsigned char ) ( w );
-	bmpinfoheader[5] = ( unsigned char ) ( w >> 8 );
-	bmpinfoheader[6] = ( unsigned char ) ( w >> 16 );
-	bmpinfoheader[7] = ( unsigned char ) ( w >> 24 );
+	bmpinfoheader[4] = ( unsigned char ) (w);
+	bmpinfoheader[5] = ( unsigned char ) (w >> 8);
+	bmpinfoheader[6] = ( unsigned char ) (w >> 16);
+	bmpinfoheader[7] = ( unsigned char ) (w >> 24);
 
-	bmpinfoheader[8] = ( unsigned char ) ( h );
-	bmpinfoheader[9] = ( unsigned char ) ( h >> 8 );
-	bmpinfoheader[10] = ( unsigned char ) ( h >> 16 );
-	bmpinfoheader[11] = ( unsigned char ) ( h >> 24 );
+	bmpinfoheader[8] = ( unsigned char ) (h);
+	bmpinfoheader[9] = ( unsigned char ) (h >> 8);
+	bmpinfoheader[10] = ( unsigned char ) (h >> 16);
+	bmpinfoheader[11] = ( unsigned char ) (h >> 24);
 
-	bmpinfoheader[21] = ( unsigned char ) ( s );
-	bmpinfoheader[22] = ( unsigned char ) ( s >> 8 );
-	bmpinfoheader[23] = ( unsigned char ) ( s >> 16 );
-	bmpinfoheader[24] = ( unsigned char ) ( s >> 24 );
+	bmpinfoheader[21] = ( unsigned char ) (s);
+	bmpinfoheader[22] = ( unsigned char ) (s >> 8);
+	bmpinfoheader[23] = ( unsigned char ) (s >> 16);
+	bmpinfoheader[24] = ( unsigned char ) (s >> 24);
 
-	bmpinfoheader[25] = ( unsigned char ) ( ppm );
-	bmpinfoheader[26] = ( unsigned char ) ( ppm >> 8 );
-	bmpinfoheader[27] = ( unsigned char ) ( ppm >> 16 );
-	bmpinfoheader[28] = ( unsigned char ) ( ppm >> 24 );
+	bmpinfoheader[25] = ( unsigned char ) (ppm);
+	bmpinfoheader[26] = ( unsigned char ) (ppm >> 8);
+	bmpinfoheader[27] = ( unsigned char ) (ppm >> 16);
+	bmpinfoheader[28] = ( unsigned char ) (ppm >> 24);
 
-	bmpinfoheader[29] = ( unsigned char ) ( ppm );
-	bmpinfoheader[30] = ( unsigned char ) ( ppm >> 8 );
-	bmpinfoheader[31] = ( unsigned char ) ( ppm >> 16 );
-	bmpinfoheader[32] = ( unsigned char ) ( ppm >> 24 );
+	bmpinfoheader[29] = ( unsigned char ) (ppm);
+	bmpinfoheader[30] = ( unsigned char ) (ppm >> 8);
+	bmpinfoheader[31] = ( unsigned char ) (ppm >> 16);
+	bmpinfoheader[32] = ( unsigned char ) (ppm >> 24);
 
 	f = fopen(filename, "wb");
 
 	fwrite(bmpfileheader, 1, 14, f);
 	fwrite(bmpinfoheader, 1, 40, f);
 
-	for (int i = 0; i<k; i++) {
+	for (int i = 0; i < k; i++) {
 		RGBType rgb = data[i];
 
-		double red = ( data[i].red )*255;
-		double green = ( data[i].green )*255;
-		double blue = ( data[i].blue )*255;
+		double red = (data[i].red)*255;
+		double green = (data[i].green)*255;
+		double blue = (data[i].blue)*255;
 
-		unsigned char color[3] = { ( int ) floor(blue), ( int ) floor(green), ( int ) floor(red) };
+		unsigned char color[3] = {( int ) floor(blue), ( int ) floor(green), ( int ) floor(red)};
 
 		fwrite(color, 1, 3, f);
 	}
@@ -97,15 +96,13 @@ void saveImg(const char* filename, int w, int h, int dpi, RGBType* data)
 	fclose(f);
 }
 
-int winningObjectIndex(vector<double> intersections)
-{
+int winningObjectIndex(vector<double> intersections) {
 	int minIndexValue;
 
 	if (intersections.size()==0) {
 		return -1;
-	}
-	else if (intersections.size()==1) {
-		if (intersections.at(0)>0) {
+	} else if (intersections.size()==1) {
+		if (intersections.at(0) > 0) {
 			// If that intersection is greater than zero then its our min index
 			return 0;
 		}
@@ -117,15 +114,15 @@ int winningObjectIndex(vector<double> intersections)
 	// First find the maxmum value
 
 	double max = 0;
-	for (int i = 0; i<intersections.size(); i++) {
-		if (intersections[i]>max) {
+	for (int i = 0; i < intersections.size(); i++) {
+		if (intersections[i] > max) {
 			max = intersections.at(i);
 		}
 	}
 
-	if (max>0) {
-		for (int i = 0; i<intersections.size(); i++) {
-			if (intersections.at(i)>0 && intersections.at(i)<=max) {
+	if (max > 0) {
+		for (int i = 0; i < intersections.size(); i++) {
+			if (intersections.at(i) > 0 && intersections.at(i) <= max) {
 				max = intersections.at(i);
 				minIndexValue = i;
 			}
@@ -137,16 +134,15 @@ int winningObjectIndex(vector<double> intersections)
 	return -1;
 }
 
-CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vector<Object*> scene_objects,
-		int indexOfWinningObject, vector<Source*> lightSources, double accuracy, double ambientLight)
-{
+CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vector<Object *> scene_objects,
+                   int indexOfWinningObject, vector<Source *> lightSources, double accuracy, double ambientLight) {
 	CSColor winningObjectColor = scene_objects.at(indexOfWinningObject)->getColor();
 	Vect winningObjectNormal = scene_objects.at(indexOfWinningObject)->getNormalAt(intersectionPosition);
 
-	if (winningObjectColor.getColorSpecial()>=2) {
+	if (winningObjectColor.getColorSpecial() >= 2) {
 		int square = ( int ) floor(intersectionPosition.getVectX())
-				// + (int)floor(intersectionPosition.getVectY())
-				+( int ) floor(intersectionPosition.getVectZ());
+			// + (int)floor(intersectionPosition.getVectY())
+			+ ( int ) floor(intersectionPosition.getVectZ());
 		double red = winningObjectColor.getColorRed();
 		double blue = winningObjectColor.getColorBlue();
 		double green = winningObjectColor.getColorGreen();
@@ -154,8 +150,7 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 			winningObjectColor.setColorRed(0.25*red);
 			winningObjectColor.setColorGreen(0.25*blue);
 			winningObjectColor.setColorBlue(0.25*green);
-		}
-		else {
+		} else {
 			winningObjectColor.setColorRed(0.75*red);
 			winningObjectColor.setColorGreen(0.75*blue);
 			winningObjectColor.setColorBlue(0.75*green);
@@ -164,7 +159,7 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 
 	CSColor finalColor = winningObjectColor.colorScalar(ambientLight);
 
-	if (winningObjectColor.getColorSpecial()>0 && winningObjectColor.getColorSpecial()<=1) {
+	if (winningObjectColor.getColorSpecial() > 0 && winningObjectColor.getColorSpecial() <= 1) {
 		double dot1 = winningObjectNormal.dotProduct(intersectionRayDirection.negative());
 		Vect scalar1 = winningObjectNormal.multVector(dot1);
 		Vect add1 = scalar1.addVector(intersectionRayDirection);
@@ -176,29 +171,33 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 
 		vector<double> reflectionIntersections;
 
-		for (int reflectionIndex = 0; reflectionIndex<scene_objects.size(); reflectionIndex++) {
+		for (int reflectionIndex = 0; reflectionIndex < scene_objects.size(); reflectionIndex++) {
 			reflectionIntersections.push_back(scene_objects.at(reflectionIndex)->findIntersection(reflectionRay));
 		}
 
 		int indexOfWinningObjectWithReflection = winningObjectIndex(reflectionIntersections);
 
 		if (indexOfWinningObjectWithReflection!=-1) {
-			if (reflectionIntersections.at(indexOfWinningObjectWithReflection)>accuracy) {
+			if (reflectionIntersections.at(indexOfWinningObjectWithReflection) > accuracy) {
 				Vect reflectionIntersectionPosition = intersectionPosition.addVector(
-						reflectionDirection.multVector(reflectionIntersections.at(indexOfWinningObjectWithReflection)));
+					reflectionDirection.multVector(reflectionIntersections.at(indexOfWinningObjectWithReflection)));
 				Vect reflectionIntersectionRayDirection = reflectionDirection;
 
 				CSColor reflectionIntersectionColor = getColorAt(reflectionIntersectionPosition,
-						reflectionIntersectionRayDirection, scene_objects, indexOfWinningObjectWithReflection,
-						lightSources, accuracy, ambientLight);
+				                                                 reflectionIntersectionRayDirection,
+				                                                 scene_objects,
+				                                                 indexOfWinningObjectWithReflection,
+				                                                 lightSources,
+				                                                 accuracy,
+				                                                 ambientLight);
 
 				finalColor = finalColor.addColor(
-						reflectionIntersectionColor.colorScalar(winningObjectColor.getColorSpecial()));
+					reflectionIntersectionColor.colorScalar(winningObjectColor.getColorSpecial()));
 			}
 		}
 	}
 
-	if (winningObjectColor.getColorSpecial()>2) {
+	if (winningObjectColor.getColorSpecial() > 2) {
 		double dot1 = winningObjectNormal.dotProduct(intersectionRayDirection.negative());
 		Vect scalar1 = winningObjectNormal.multVector(dot1);
 		Vect add1 = scalar1.addVector(intersectionRayDirection);
@@ -210,57 +209,61 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 
 		vector<double> reflectionIntersections;
 
-		for (int reflectionIndex = 0; reflectionIndex<scene_objects.size(); reflectionIndex++) {
+		for (int reflectionIndex = 0; reflectionIndex < scene_objects.size(); reflectionIndex++) {
 			reflectionIntersections.push_back(scene_objects.at(reflectionIndex)->findIntersection(reflectionRay));
 		}
 
 		int indexOfWinningObjectWithReflection = winningObjectIndex(reflectionIntersections);
 
 		if (indexOfWinningObjectWithReflection!=-1) {
-			if (reflectionIntersections.at(indexOfWinningObjectWithReflection)>accuracy) {
+			if (reflectionIntersections.at(indexOfWinningObjectWithReflection) > accuracy) {
 				Vect reflectionIntersectionPosition = intersectionPosition.addVector(
-						reflectionDirection.multVector(reflectionIntersections.at(indexOfWinningObjectWithReflection)));
+					reflectionDirection.multVector(reflectionIntersections.at(indexOfWinningObjectWithReflection)));
 				Vect reflectionIntersectionRayDirection = reflectionDirection;
 
 				CSColor reflectionIntersectionColor = getColorAt(reflectionIntersectionPosition,
-						reflectionIntersectionRayDirection, scene_objects, indexOfWinningObjectWithReflection,
-						lightSources, accuracy, ambientLight);
+				                                                 reflectionIntersectionRayDirection,
+				                                                 scene_objects,
+				                                                 indexOfWinningObjectWithReflection,
+				                                                 lightSources,
+				                                                 accuracy,
+				                                                 ambientLight);
 
 				finalColor = finalColor.addColor(
-						reflectionIntersectionColor.colorScalar(winningObjectColor.getColorSpecial()-2));
+					reflectionIntersectionColor.colorScalar(winningObjectColor.getColorSpecial() - 2));
 			}
 		}
 	}
 
-	for (int lightIndex = 0; lightIndex<lightSources.size(); lightIndex++) {
+	for (int lightIndex = 0; lightIndex < lightSources.size(); lightIndex++) {
 		Vect lightDirection = lightSources.at(lightIndex)->getLightPosition()
-				.addVector(intersectionPosition.negative())
-				.normalize();
+			.addVector(intersectionPosition.negative())
+			.normalize();
 
 		float cosineAngle = winningObjectNormal.dotProduct(lightDirection);
 
-		if (cosineAngle>0) {
+		if (cosineAngle > 0) {
 			// Test for shadows
 			bool shadowed = false;
 
 			Vect distanceToLight = lightSources.at(lightIndex)->getLightPosition()
-					.addVector(intersectionPosition.negative())
-					.normalize();
+				.addVector(intersectionPosition.negative())
+				.normalize();
 
 			float distanceToLightMagnitude = distanceToLight.magnitude();
 
 			Ray shadowRay(
-					intersectionPosition,
-					lightSources.at(lightIndex)->getLightPosition().addVector(
-							intersectionPosition.negative()).normalize());
+				intersectionPosition,
+				lightSources.at(lightIndex)->getLightPosition().addVector(
+					intersectionPosition.negative()).normalize());
 			vector<double> secondaryIntersections;
-			for (int objectIndex = 0; objectIndex<scene_objects.size() && !shadowed; objectIndex++) {
+			for (int objectIndex = 0; objectIndex < scene_objects.size() && !shadowed; objectIndex++) {
 				secondaryIntersections.push_back(scene_objects.at(objectIndex)->findIntersection(shadowRay));
 			}
 
-			for (int c = 0; c<secondaryIntersections.size(); c++) {
-				if (secondaryIntersections.at(c)>accuracy) {
-					if (secondaryIntersections.at(c)<=distanceToLightMagnitude) {
+			for (int c = 0; c < secondaryIntersections.size(); c++) {
+				if (secondaryIntersections.at(c) > accuracy) {
+					if (secondaryIntersections.at(c) <= distanceToLightMagnitude) {
 						shadowed = true;
 					}
 					break;
@@ -269,8 +272,8 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 
 			if (!shadowed) {
 				finalColor = finalColor.addColor(
-						winningObjectColor.multColor(lightSources.at(lightIndex)->getColor()).colorScalar(cosineAngle));
-				if (winningObjectColor.getColorSpecial()>0 && winningObjectColor.getColorSpecial()<=1) {
+					winningObjectColor.multColor(lightSources.at(lightIndex)->getColor()).colorScalar(cosineAngle));
+				if (winningObjectColor.getColorSpecial() > 0 && winningObjectColor.getColorSpecial() <= 1) {
 					// Special (0-1]
 					double dot1 = winningObjectNormal.dotProduct(intersectionRayDirection.negative());
 					Vect scalar1 = winningObjectNormal.multVector(dot1);
@@ -280,10 +283,10 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 					Vect reflectionDirection = add2.normalize();
 
 					double specular = reflectionDirection.dotProduct(lightDirection);
-					if (specular>0) {
+					if (specular > 0) {
 						specular = pow(specular, 10);
 						finalColor = finalColor.addColor(lightSources.at(lightIndex)->getColor().colorScalar(
-								specular*winningObjectColor.getColorSpecial()));
+							specular*winningObjectColor.getColorSpecial()));
 					}
 				}
 			}
@@ -292,36 +295,33 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 	return finalColor.clip();
 }
 
-unsigned char* readBMP(const char* filename)
-{
+unsigned char *readBMP(const char *filename) {
 	int i;
-	FILE* f = fopen("bricks.png", "rb");
+	FILE *f = fopen("bricks.png", "rb");
 	unsigned char info[54];
 	fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 
 	// extract image height and width from header
-	int width = *(int*)&info[18];
-	int height = *(int*)&info[22];
+	int width = *( int * ) &info[18];
+	int height = *( int * ) &info[22];
 	cout << info << endl;
 	cout << width << "x" << height << endl;
 
-	int size = 3 * width * height;
-	unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
+	int size = 3*width*height;
+	unsigned char *data = new unsigned char[size]; // allocate 3 bytes per pixel
 	fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
 	fclose(f);
 
-	for(i = 0; i < size; i += 3)
-	{
+	for (i = 0; i < size; i += 3) {
 		unsigned char tmp = data[i];
-		data[i] = data[i+2];
-		data[i+2] = tmp;
+		data[i] = data[i + 2];
+		data[i + 2] = tmp;
 	}
 
 	return data;
 }
 
-void makeCube(Vect corner1, Vect corner2, CSColor color)
-{
+void makeCube(Vect corner1, Vect corner2, CSColor color) {
 	// Corner 1
 	double c1x = corner1.getVectX();
 	double c1y = corner1.getVectY();
@@ -362,11 +362,10 @@ void makeCube(Vect corner1, Vect corner2, CSColor color)
 
 /*
 */
-bool makeTeapot()
-{
-	const char* path = "teapot.obj";
-	const char* imagePath = "bricks.png";
-	unsigned char* imageData = readBMP(imagePath);
+bool makeTeapot() {
+	const char *path = "teapot2.obj";
+	const char *imagePath = "bricks.png";
+	//unsigned char* imageData = readBMP(imagePath);
 	int imageWidth = 1024;
 	int imageHeight = 1024;
 	printf("Loading OBJ file %s...\n", path);
@@ -380,6 +379,10 @@ bool makeTeapot()
 	string txtLine;
 	int row = 0;
 	double divisor = 14;
+	double xShift = 0.5;
+	double yShift = -0.5;
+	double zShift = -1;
+	Vect X(1, 0, 0);
 
 	while (getline(fin, txtLine)) {
 		string indicator;
@@ -390,32 +393,36 @@ bool makeTeapot()
 		if (indicator=="v") {
 			double x, y, z;
 			ss >> x >> y >> z;
-			temp_vertices.push_back(Vect(x/divisor, y/divisor, z/divisor));
-		}
-		else if (indicator == "vt") {
+
+			temp_vertices.push_back(
+				Vect(
+					x/divisor + xShift,
+					y/divisor + yShift,
+					z/divisor + zShift
+				)
+			);
+		} else if (indicator=="vt") {
 			double x, y;
 			ss >> x >> y;
-			x = (x + 2) * imageWidth;
-			y = (y + 2) * imageHeight;
+			x = (x + 2)*imageWidth;
+			y = (y + 2)*imageHeight;
 			temp_uvs.push_back(Vect(x, y, 0));
-		}
-		else if (indicator=="vn") {
+		} else if (indicator=="vn") {
 			double x, y, z;
 			ss >> x >> y >> z;
 			temp_normals.push_back(Vect(x, y, z));
-		}
-		else if (indicator=="f") {
+		} else if (indicator=="f") {
 			string vertex1, vertex2, vertex3, data;
 			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
 
 			ss >> vertex1 >> vertex2 >> vertex3;
-			data = vertex1+" "+vertex2+" "+vertex3+"\n";
+			data = vertex1 + " " + vertex2 + " " + vertex3 + "\n";
 
 			sscanf(&data[0],
-					"%d/%d/%d %d/%d/%d %d/%d/%d\n",
-					&vertexIndex[0], &uvIndex[0], &normalIndex[0],
-					&vertexIndex[1], &uvIndex[1], &normalIndex[1],
-					&vertexIndex[2], &uvIndex[2], &normalIndex[2]
+			       "%d/%d/%d %d/%d/%d %d/%d/%d\n",
+			       &vertexIndex[0], &uvIndex[0], &normalIndex[0],
+			       &vertexIndex[1], &uvIndex[1], &normalIndex[1],
+			       &vertexIndex[2], &uvIndex[2], &normalIndex[2]
 			);
 
 			vertexIndices.push_back(vertexIndex[0]);
@@ -433,41 +440,44 @@ bool makeTeapot()
 	fin.close();
 
 	// For each vertex of each triangle
-	for (unsigned int i = 0; i<vertexIndices.size(); i += 3) {
+	for (unsigned int i = 0; i < vertexIndices.size(); i += 3) {
 
 		// Get the indices of its attributes
 		unsigned int vertexIndex1 = vertexIndices[i];
-		unsigned int vertexIndex2 = vertexIndices[i+1];
-		unsigned int vertexIndex3 = vertexIndices[i+2];
+		unsigned int vertexIndex2 = vertexIndices[i + 1];
+		unsigned int vertexIndex3 = vertexIndices[i + 2];
 		unsigned int uvIndex = uvIndices[i];
 		unsigned int normalIndex = normalIndices[i];
 
 		// Get the attributes thanks to the index
-		Vect vertex1 = temp_vertices[vertexIndex1-1];
-		Vect vertex2 = temp_vertices[vertexIndex2-1];
-		Vect vertex3 = temp_vertices[vertexIndex3-1];
+		Vect vertex1 = temp_vertices[vertexIndex1 - 1];
+		Vect vertex2 = temp_vertices[vertexIndex2 - 1];
+		Vect vertex3 = temp_vertices[vertexIndex3 - 1];
 		Vect uv = temp_uvs[uvIndex - 1];
-		Vect normal = temp_normals[normalIndex-1];
+		Vect normal = temp_normals[normalIndex - 1];
 		//cout << vertex1.getVectX() << endl;
 		double red, green, blue;
-		int pixelIndex = uv.getVectX() * imageWidth + uv.getVectY();
-		red = imageData[pixelIndex];
-		blue = imageData[pixelIndex + 1];
-		green = imageData[pixelIndex + 2];
+		//int pixelIndex = uv.getVectX() * imageWidth + uv.getVectY();
+		//red = imageData[pixelIndex];
+		//green = imageData[pixelIndex + 1];
+		//blue = imageData[pixelIndex + 2];
+		red = 0.45;
+		blue = 0.45;
+		green = 0.45;
 
-		//cout << "index: " << pixelIndex << "; red: " << red << "; blue: " << blue << "; green: " << green << endl;
+		//cout << "index: " << pixelIndex << "; red: " << red << "; green: " << green << "; blue: " << blue << endl;
 		scene_objects.push_back(
-				new Triangle(
-						temp_vertices[vertexIndex1-1],
-						temp_vertices[vertexIndex2-1],
-						temp_vertices[vertexIndex3-1],
-						CSColor(
-								red,
-								blue,
-								green,
-								0.0
-						)
+			new Triangle(
+				vertex1,
+				vertex2,
+				vertex3,
+				CSColor(
+					red,
+					green,
+					blue,
+					0.3
 				)
+			)
 		);
 
 		// Put the attributes in buffers
@@ -480,8 +490,7 @@ bool makeTeapot()
 	return true;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
 	cout << "rendering..." << endl;
 
 	clock_t startTime, endTime;
@@ -491,7 +500,7 @@ int main(int argc, char* argv[])
 	int width = 800;
 	int height = 600;
 	int area = width*height;
-	RGBType* pixels = new RGBType[area];
+	RGBType *pixels = new RGBType[area];
 
 	int aadepth = 1;
 	double aathreshold = 0.1;
@@ -508,9 +517,9 @@ int main(int argc, char* argv[])
 
 	Vect look_at(0, 0, 0);
 	Vect diff_btw(
-			camPos.getVectX()-look_at.getVectX(),
-			camPos.getVectY()-look_at.getVectY(),
-			camPos.getVectZ()-look_at.getVectZ()
+		camPos.getVectX() - look_at.getVectX(),
+		camPos.getVectY() - look_at.getVectY(),
+		camPos.getVectZ() - look_at.getVectZ()
 	);
 
 	Vect camDir = diff_btw.negative().normalize();
@@ -529,8 +538,8 @@ int main(int argc, char* argv[])
 
 	Vect light_position(-7, 10, -10);
 	Light scene_light(light_position, white_light);
-	vector<Source*>lightSources;
-	lightSources.push_back(dynamic_cast<Source*>(&scene_light));
+	vector < Source* > lightSources;
+	lightSources.push_back(dynamic_cast<Source *>(&scene_light));
 
 	// Scene Objects
 
@@ -542,10 +551,10 @@ int main(int argc, char* argv[])
 	Sphere scene_sphere3(sphereLocation3, 0.6, deep_red);
 	Plane scene_plane(Y, -1, tile_floor);
 
-	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere1));
+	scene_objects.push_back(dynamic_cast<Object *>(&scene_sphere1));
 	//scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere2));
-	//scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere3));
-	scene_objects.push_back(dynamic_cast<Object*>(&scene_plane));
+	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere3));
+	scene_objects.push_back(dynamic_cast<Object *>(&scene_plane));
 	// scene_objects.push_back(dynamic_cast<Object*>(&scene_triangle));
 
 	//makeCube(Vect(1, 1, 1), Vect(-1, -1, -1), orange);
@@ -556,10 +565,10 @@ int main(int argc, char* argv[])
 	double xAmount, yAmount;
 	double tempRed, tempGreen, tempBlue;
 
-	for (int x = 0; x<width; x++) {
+	for (int x = 0; x < width; x++) {
 		//cout << "row: " << x << endl;
-		for (int y = 0; y<height; y++) {
-			currentPixelIndex = y*width+x;
+		for (int y = 0; y < height; y++) {
+			currentPixelIndex = y*width + x;
 
 			// Start with a blank pixel
 			double tempRed[aadepth*aadepth];
@@ -569,88 +578,87 @@ int main(int argc, char* argv[])
 			/**
 			 * 45.40
 			 */
-			for (int aax = 0; aax<aadepth; aax++) {
-				for (int aay = 0; aay<aadepth; aay++) {
+			for (int aax = 0; aax < aadepth; aax++) {
+				for (int aay = 0; aay < aadepth; aay++) {
 
-					aaIndex = aay*aadepth+aax;
+					aaIndex = aay*aadepth + aax;
 					srand(time(0));
 
 					// Create the ray from the camera to this pixel
 					if (aadepth==1) {
 						// Start with no anti-aliasing
-						if (width>height) {
+						if (width > height) {
 							// The image is wider than it is tall
-							xAmount = (( x+0.5 )/width )*aspectRatio-((( width-height )/( double ) height )/2 );
-							yAmount = (( height-y )+0.5 )/height;
-						}
-						else if (height>width) {
+							xAmount = ((x + 0.5)/width)*aspectRatio - (((width - height)/( double ) height)/2);
+							yAmount = ((height - y) + 0.5)/height;
+						} else if (height > width) {
 							// The image is taller than it is wide
-							xAmount = ( x+0.5 )/width;
+							xAmount = (x + 0.5)/width;
 							yAmount =
-									((( height-y )+0.5 )/height )/aspectRatio-((( height-width )/( double ) width )/2 );
-						}
-						else {
+								(((height - y) + 0.5)/height)/aspectRatio - (((height - width)/( double ) width)/2);
+						} else {
 							// The image is square
-							xAmount = ( x+0.5 )/width;
-							yAmount = (( height-y )+0.5 )/height;
+							xAmount = (x + 0.5)/width;
+							yAmount = ((height - y) + 0.5)/height;
 						}
-					}
-					else {
+					} else {
 						// Anti-aliasing
-						if (width>height) {
+						if (width > height) {
 							// The image is wider than it is tall
-							xAmount = (( x+( double ) aax/(( double ) aadepth-1 ))/width )*aspectRatio
-									-((( width-height )/( double ) height )/2 );
-							yAmount = (( height-y )+( double ) aax/(( double ) aadepth-1 ))/height;
-						}
-						else if (height>width) {
+							xAmount = ((x + ( double ) aax/(( double ) aadepth - 1))/width)*aspectRatio
+								- (((width - height)/( double ) height)/2);
+							yAmount = ((height - y) + ( double ) aax/(( double ) aadepth - 1))/height;
+						} else if (height > width) {
 							// The image is taller than it is wide
-							xAmount = ( x+( double ) aax/(( double ) aadepth-1 ))/width;
-							yAmount = ((( height-y )+( double ) aax/(( double ) aadepth-1 ))/height )/aspectRatio
-									-((( height-width )/( double ) width )/2 );
-						}
-						else {
+							xAmount = (x + ( double ) aax/(( double ) aadepth - 1))/width;
+							yAmount = (((height - y) + ( double ) aax/(( double ) aadepth - 1))/height)/aspectRatio
+								- (((height - width)/( double ) width)/2);
+						} else {
 							// The image is square
-							xAmount = ( x+( double ) aax/(( double ) aadepth-1 ))/width;
-							yAmount = (( height-y )+( double ) aax/(( double ) aadepth-1 ))/height;
+							xAmount = (x + ( double ) aax/(( double ) aadepth - 1))/width;
+							yAmount = ((height - y) + ( double ) aax/(( double ) aadepth - 1))/height;
 						}
 					}
 
 					Vect camRayOrigin = scene_camera.getCameraPosition();
 					Vect camRayDirection = camDir.addVector(
-							camRight.multVector(xAmount-0.5)
-									.addVector(
-											camDown.multVector(yAmount-0.5)
-									)
+						camRight.multVector(xAmount - 0.5)
+							.addVector(
+								camDown.multVector(yAmount - 0.5)
+							)
 					).normalize();
 
 					Ray camRay(camRayOrigin, camRayDirection);
 
 					vector<double> intersections;
 
-					for (int i = 0; i<scene_objects.size(); i++) {
+					for (int i = 0; i < scene_objects.size(); i++) {
 						intersections.push_back(scene_objects.at(i)->findIntersection(camRay));
 					}
 
 					int indexOfWinningObject = winningObjectIndex(intersections);
 
 					if (indexOfWinningObject==-1) {
-						tempRed[aaIndex]   = 0.227451;
+						tempRed[aaIndex] = 0.227451;
 						tempGreen[aaIndex] = 0.647085;
-						tempBlue[aaIndex]  = 0.847059;
-					}
-					else {
-						if (intersections.at(indexOfWinningObject)>accuracy) {
+						tempBlue[aaIndex] = 0.847059;
+					} else {
+						if (intersections.at(indexOfWinningObject) > accuracy) {
 							// Determine the position and direction vectors at the point of intersection
 							Vect intersectionPosition = camRayOrigin.addVector(
-									camRayDirection.multVector(
-											intersections.at(indexOfWinningObject)
-									)
+								camRayDirection.multVector(
+									intersections.at(indexOfWinningObject)
+								)
 							);
 							Vect intersectionRayDirection = camRayDirection;
 
-							CSColor intersectionColor = getColorAt(intersectionPosition, intersectionRayDirection,
-									scene_objects, indexOfWinningObject, lightSources, accuracy, ambientLight);
+							CSColor intersectionColor = getColorAt(intersectionPosition,
+							                                       intersectionRayDirection,
+							                                       scene_objects,
+							                                       indexOfWinningObject,
+							                                       lightSources,
+							                                       accuracy,
+							                                       ambientLight);
 
 							tempRed[aaIndex] = intersectionColor.getColorRed();
 							tempGreen[aaIndex] = intersectionColor.getColorGreen();
@@ -664,21 +672,21 @@ int main(int argc, char* argv[])
 			double totalGreen = 0;
 			double totalBlue = 0;
 
-			for (int iRed = 0; iRed<aadepth*aadepth; iRed++) {
+			for (int iRed = 0; iRed < aadepth*aadepth; iRed++) {
 				totalRed += tempRed[iRed];
 			}
 
-			for (int iGreen = 0; iGreen<aadepth*aadepth; iGreen++) {
+			for (int iGreen = 0; iGreen < aadepth*aadepth; iGreen++) {
 				totalGreen += tempGreen[iGreen];
 			}
 
-			for (int iBlue = 0; iBlue<aadepth*aadepth; iBlue++) {
+			for (int iBlue = 0; iBlue < aadepth*aadepth; iBlue++) {
 				totalBlue += tempBlue[iBlue];
 			}
 
-			double avgRed = totalRed/( aadepth*aadepth );
-			double avgGreen = totalGreen/( aadepth*aadepth );
-			double avgBlue = totalBlue/( aadepth*aadepth );
+			double avgRed = totalRed/(aadepth*aadepth);
+			double avgGreen = totalGreen/(aadepth*aadepth);
+			double avgBlue = totalBlue/(aadepth*aadepth);
 
 			pixels[currentPixelIndex].red = avgRed;
 			pixels[currentPixelIndex].green = avgGreen;
@@ -691,9 +699,9 @@ int main(int argc, char* argv[])
 	delete pixels, tempRed, tempGreen, tempBlue;
 
 	endTime = clock();
-	float totalTime = (( float ) endTime-( float ) ( startTime ))/1000;
+	float totalTime = (( float ) endTime - ( float ) (startTime))/1000;
 
-	cout << totalTime / 1000 << "sec" << endl;
+	cout << totalTime << "sec" << endl;
 
 	return 0;
 }
