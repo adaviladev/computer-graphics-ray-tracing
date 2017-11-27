@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <cstdio>
 #include <time.h>
+#include <math.h>
 
 #include "Vect.h"
 #include "Ray.h"
@@ -380,9 +381,16 @@ bool makeTeapot() {
 	int row = 0;
 	double divisor = 14;
 	double xShift = 0.5;
-	double yShift = -0.5;
-	double zShift = -1;
+	double yShift = -0.7;
+	double zShift = -1.3;
 	Vect X(1, 0, 0);
+	double angle = -51;
+	Vect matrix[3] = {
+		//   X           Y            Z
+		Vect(1,          0,           0), // 0
+		Vect(0, cos(angle), -sin(angle)), // 1
+		Vect(0, sin(angle),  cos(angle))  // 2
+	};
 
 	while (getline(fin, txtLine)) {
 		string indicator;
@@ -393,6 +401,18 @@ bool makeTeapot() {
 		if (indicator=="v") {
 			double x, y, z;
 			ss >> x >> y >> z;
+
+			x = (matrix[0].getVectX() * x) +
+				(matrix[0].getVectY() * y) +
+				(matrix[0].getVectZ() * z);
+
+			y = (matrix[1].getVectX() * x) +
+				(matrix[1].getVectY() * y) +
+				(matrix[1].getVectZ() * z);
+
+			z = (matrix[2].getVectX() * x) +
+				(matrix[2].getVectY() * y) +
+				(matrix[2].getVectZ() * z);
 
 			temp_vertices.push_back(
 				Vect(
@@ -694,7 +714,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	cout << "Start saving image" << endl;
-	saveImg("scene_aa_x2.bmp", width, height, dpi, pixels);
+	saveImg("scene_aa_x2_-51.bmp", width, height, dpi, pixels);
 
 	delete pixels, tempRed, tempGreen, tempBlue;
 
