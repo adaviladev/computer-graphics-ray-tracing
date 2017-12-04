@@ -24,6 +24,8 @@
 
 using namespace std;
 
+int stageWidth = 800;
+int stageHeight = 600;
 int currentPixelIndex;
 vector<Object *> scene_objects;
 
@@ -296,17 +298,17 @@ CSColor getColorAt(Vect intersectionPosition, Vect intersectionRayDirection, vec
 	return finalColor.clip();
 }
 
-unsigned char *readBMP(const char *filename) {
+unsigned char *readBMP(const char *filename, int &imageWidth, int &imageHeight) {
 	int i;
-	FILE *f = fopen("bricks.png", "rb");
+	FILE *f = fopen(filename, "rb");
 	unsigned char info[54];
 	fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 
 	// extract image height and width from header
 	int width = *( int * ) &info[18];
 	int height = *( int * ) &info[22];
-	cout << info << endl;
-	cout << width << "x" << height << endl;
+	imageWidth = width;
+	imageHeight = height;
 
 	int size = 3*width*height;
 	unsigned char *data = new unsigned char[size]; // allocate 3 bytes per pixel
@@ -365,10 +367,10 @@ void makeCube(Vect corner1, Vect corner2, CSColor color) {
 */
 bool makeTeapot() {
 	const char *path = "teapot2.obj";
-	const char *imagePath = "bricks.png";
-	//unsigned char* imageData = readBMP(imagePath);
-	int imageWidth = 1024;
-	int imageHeight = 1024;
+	const char *imagePath = "bricks.bmp";
+	int imageWidth;
+	int imageHeight;
+	unsigned char *imageData = readBMP(imagePath, imageWidth, imageHeight);
 	printf("Loading OBJ file %s...\n", path);
 
 	vector<unsigned int> vertexIndices, uvIndices, normalIndices;
@@ -387,10 +389,11 @@ bool makeTeapot() {
 	double angle = -51;
 	Vect matrix[3] = {
 		//   X           Y            Z
-		Vect(1,          0,           0), // 0
+		Vect(1, 0, 0), // 0
 		Vect(0, cos(angle), -sin(angle)), // 1
-		Vect(0, sin(angle),  cos(angle))  // 2
+		Vect(0, sin(angle), cos(angle))  // 2
 	};
+	int red, green, blue;
 
 	while (getline(fin, txtLine)) {
 		string indicator;
@@ -402,17 +405,17 @@ bool makeTeapot() {
 			double x, y, z;
 			ss >> x >> y >> z;
 
-			x = (matrix[0].getVectX() * x) +
-				(matrix[0].getVectY() * y) +
-				(matrix[0].getVectZ() * z);
+			x = (matrix[0].getVectX()*x) +
+				(matrix[0].getVectY()*y) +
+				(matrix[0].getVectZ()*z);
 
-			y = (matrix[1].getVectX() * x) +
-				(matrix[1].getVectY() * y) +
-				(matrix[1].getVectZ() * z);
+			y = (matrix[1].getVectX()*x) +
+				(matrix[1].getVectY()*y) +
+				(matrix[1].getVectZ()*z);
 
-			z = (matrix[2].getVectX() * x) +
-				(matrix[2].getVectY() * y) +
-				(matrix[2].getVectZ() * z);
+			z = (matrix[2].getVectX()*x) +
+				(matrix[2].getVectY()*y) +
+				(matrix[2].getVectZ()*z);
 
 			temp_vertices.push_back(
 				Vect(
@@ -424,8 +427,9 @@ bool makeTeapot() {
 		} else if (indicator=="vt") {
 			double x, y;
 			ss >> x >> y;
-			x = (x + 2)*imageWidth;
-			y = (y + 2)*imageHeight;
+			x = (x)*imageWidth + imageWidth;
+			y = (y)*imageHeight + imageHeight;
+			//cout << "(" << x << ", " << y << ")" << endl;
 			temp_uvs.push_back(Vect(x, y, 0));
 		} else if (indicator=="vn") {
 			double x, y, z;
@@ -477,13 +481,15 @@ bool makeTeapot() {
 		Vect normal = temp_normals[normalIndex - 1];
 		//cout << vertex1.getVectX() << endl;
 		double red, green, blue;
-		//int pixelIndex = uv.getVectX() * imageWidth + uv.getVectY();
-		//red = imageData[pixelIndex];
-		//green = imageData[pixelIndex + 1];
-		//blue = imageData[pixelIndex + 2];
-		red = 0.45;
-		blue = 0.45;
-		green = 0.45;
+		int pixelIndex = uv.getVectX() * imageWidth + uv.getVectY();
+		red = (double)imageData[pixelIndex] / 255;
+		green = (double)imageData[pixelIndex + 1] / 255;
+		blue = (double)imageData[pixelIndex + 2] / 255;
+		//blue = (double)(int)imageData[(int)y * imageWidth + (int)x + 2];
+		cout << "(" << (int)(red *255) << ", " << (int)(green *255) << ", " << (int)(blue *255) << ")" << endl;
+		//red = 0.45;
+		//blue = 0.45;
+		//green = 0.45;
 
 		//cout << "index: " << pixelIndex << "; red: " << red << "; green: " << green << "; blue: " << blue << endl;
 		scene_objects.push_back(
@@ -495,7 +501,7 @@ bool makeTeapot() {
 					red,
 					green,
 					blue,
-					0.3
+					0.0
 				)
 			)
 		);
@@ -517,14 +523,12 @@ int main(int argc, char *argv[]) {
 	startTime = clock();
 
 	int dpi = 72;
-	int width = 800;
-	int height = 600;
-	int area = width*height;
+	int area = stageWidth*stageHeight;
 	RGBType *pixels = new RGBType[area];
 
 	int aadepth = 1;
 	double aathreshold = 0.1;
-	double aspectRatio = ( double ) width/( double ) height;
+	double aspectRatio = ( double ) stageWidth/( double ) stageHeight;
 	double ambientLight = 0.3;
 	double accuracy = 0.000001;
 
@@ -573,7 +577,7 @@ int main(int argc, char *argv[]) {
 
 	scene_objects.push_back(dynamic_cast<Object *>(&scene_sphere1));
 	//scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere2));
-	scene_objects.push_back(dynamic_cast<Object*>(&scene_sphere3));
+	scene_objects.push_back(dynamic_cast<Object *>(&scene_sphere3));
 	scene_objects.push_back(dynamic_cast<Object *>(&scene_plane));
 	// scene_objects.push_back(dynamic_cast<Object*>(&scene_triangle));
 
@@ -585,10 +589,12 @@ int main(int argc, char *argv[]) {
 	double xAmount, yAmount;
 	double tempRed, tempGreen, tempBlue;
 
-	for (int x = 0; x < width; x++) {
+	//return 0;
+
+	for (int x = 0; x < stageWidth; x++) {
 		//cout << "row: " << x << endl;
-		for (int y = 0; y < height; y++) {
-			currentPixelIndex = y*width + x;
+		for (int y = 0; y < stageHeight; y++) {
+			currentPixelIndex = y*stageWidth + x;
 
 			// Start with a blank pixel
 			double tempRed[aadepth*aadepth];
@@ -607,36 +613,36 @@ int main(int argc, char *argv[]) {
 					// Create the ray from the camera to this pixel
 					if (aadepth==1) {
 						// Start with no anti-aliasing
-						if (width > height) {
+						if (stageWidth > stageHeight) {
 							// The image is wider than it is tall
-							xAmount = ((x + 0.5)/width)*aspectRatio - (((width - height)/( double ) height)/2);
-							yAmount = ((height - y) + 0.5)/height;
-						} else if (height > width) {
+							xAmount = ((x + 0.5)/stageWidth)*aspectRatio - (((stageWidth - stageHeight)/( double ) stageHeight)/2);
+							yAmount = ((stageHeight - y) + 0.5)/stageHeight;
+						} else if (stageHeight > stageWidth) {
 							// The image is taller than it is wide
-							xAmount = (x + 0.5)/width;
+							xAmount = (x + 0.5)/stageWidth;
 							yAmount =
-								(((height - y) + 0.5)/height)/aspectRatio - (((height - width)/( double ) width)/2);
+								(((stageHeight - y) + 0.5)/stageHeight)/aspectRatio - (((stageHeight - stageWidth)/( double ) stageWidth)/2);
 						} else {
 							// The image is square
-							xAmount = (x + 0.5)/width;
-							yAmount = ((height - y) + 0.5)/height;
+							xAmount = (x + 0.5)/stageWidth;
+							yAmount = ((stageHeight - y) + 0.5)/stageHeight;
 						}
 					} else {
 						// Anti-aliasing
-						if (width > height) {
+						if (stageWidth > stageHeight) {
 							// The image is wider than it is tall
-							xAmount = ((x + ( double ) aax/(( double ) aadepth - 1))/width)*aspectRatio
-								- (((width - height)/( double ) height)/2);
-							yAmount = ((height - y) + ( double ) aax/(( double ) aadepth - 1))/height;
-						} else if (height > width) {
+							xAmount = ((x + ( double ) aax/(( double ) aadepth - 1))/stageWidth)*aspectRatio
+								- (((stageWidth - stageHeight)/( double ) stageHeight)/2);
+							yAmount = ((stageHeight - y) + ( double ) aax/(( double ) aadepth - 1))/stageHeight;
+						} else if (stageHeight > stageWidth) {
 							// The image is taller than it is wide
-							xAmount = (x + ( double ) aax/(( double ) aadepth - 1))/width;
-							yAmount = (((height - y) + ( double ) aax/(( double ) aadepth - 1))/height)/aspectRatio
-								- (((height - width)/( double ) width)/2);
+							xAmount = (x + ( double ) aax/(( double ) aadepth - 1))/stageWidth;
+							yAmount = (((stageHeight - y) + ( double ) aax/(( double ) aadepth - 1))/stageHeight)/aspectRatio
+								- (((stageHeight - stageWidth)/( double ) stageWidth)/2);
 						} else {
 							// The image is square
-							xAmount = (x + ( double ) aax/(( double ) aadepth - 1))/width;
-							yAmount = ((height - y) + ( double ) aax/(( double ) aadepth - 1))/height;
+							xAmount = (x + ( double ) aax/(( double ) aadepth - 1))/stageWidth;
+							yAmount = ((stageHeight - y) + ( double ) aax/(( double ) aadepth - 1))/stageHeight;
 						}
 					}
 
@@ -714,7 +720,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	cout << "Start saving image" << endl;
-	saveImg("scene_aa_x2_-51.bmp", width, height, dpi, pixels);
+	saveImg("scene_aa_x2_-51.bmp", stageWidth, stageHeight, dpi, pixels);
 
 	delete pixels, tempRed, tempGreen, tempBlue;
 
